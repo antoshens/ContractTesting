@@ -1,0 +1,104 @@
+﻿@page "/fetchdata"
+
+<PageTitle>REST Cuntries</PageTitle>
+
+@using Consumer.Data
+@using System.Text
+
+@inject CountryService CountryService
+
+<h1>RESTCountries API</h1>
+
+<div>
+    <EditForm Model="@filterModel" OnValidSubmit="FetchCountries">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <label>
+            Name:
+            <InputText DisplayName="Name" @bind-Value="filterModel.Name"></InputText>
+        </label>
+
+        <label>
+            Limit:
+            <InputNumber DisplayName="Limit" @bind-Value="filterModel.Limit"></InputNumber>
+        </label>
+
+        <label>
+            Max Population (millions):
+            <InputNumber DisplayName="Population" @bind-Value="filterModel.Population"></InputNumber>
+        </label>
+
+        <label>
+            Sort Order:
+            <InputSelect DisplayName="Sort Order" @bind-Value="filterModel.SortOrder" TValue="SortOrder">
+                @foreach (var order in Enum.GetValues(typeof(SortOrder)))
+                {
+                    <option value="@order">@order</option>
+                }
+            </InputSelect>
+        </label>
+
+        <button type="submit">Submit</button>
+        <div class="text-danger">@errorMessage</div>
+    </EditForm>
+
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Population</th>
+                    <th>Capital</th>
+                    <th>Area</th>
+                    <th>Start of the Week</th>
+                    <th>Car Side</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var country in countries)
+                {
+                    <tr>
+                        <td>@country.Name.Official</td>
+                        <td>@country.Population</td>
+                        <td>@country.Capital[0]</td>
+                        <td>@country.Area</td>
+                        <td>@country.StartOfWeek</td>
+                        <td>@country.Car?.Side</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (isRequestProcessing)
+{
+    <p><em>Loading...</em></p>
+}
+
+@code {
+    private IEnumerable<Country> countries = Enumerable.Empty<Country>();
+    private bool isRequestProcessing;
+    private CountryFilter filterModel = new CountryFilter();
+    private StringBuilder errorMessage = new StringBuilder();
+
+    protected async Task FetchCountries()
+    {
+        errorMessage.Clear();
+        isRequestProcessing = true;
+
+        try
+        {
+            countries = await CountryService.GetCountriesAsync(filterModel);
+        }
+        catch (Exception ex)
+        {
+            errorMessage.Append(ex.Message);
+        }
+        finally
+        {
+            isRequestProcessing = false;
+        }
+    }
+}

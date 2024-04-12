@@ -1,0 +1,76 @@
+﻿@page "/adddata"
+
+<PageTitle>REST Cuntries</PageTitle>
+
+@using Consumer.Data
+@using System.Text
+@using System.ComponentModel.DataAnnotations
+
+@inject CountryService CountryService
+@inject IJSRuntime JsRuntime
+
+<h1>Add Currency</h1>
+
+<div>
+    <EditForm Model="@model" OnValidSubmit="AddCurrency">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <label>
+            Country Name:
+            <InputText DisplayName="CountryName" @bind-Value="model.CountryName"></InputText>
+        </label>
+
+        <label>
+            Name:
+            <InputText DisplayName="Limit" @bind-Value="model.Currency.Name"></InputText>
+        </label>
+
+        <label>
+            Symbol:
+            <InputText DisplayName="Population" @bind-Value="model.Currency.Symbol"></InputText>
+        </label>
+
+        <button type="submit">Submit</button>
+        <div class="text-danger">@errorMessage</div>
+    </EditForm>
+</div>
+
+@if (isRequestProcessing)
+{
+    <p><em>Loading...</em></p>
+}
+
+@code {
+    class CurrencyModel
+    {
+        [Required]
+        public string CountryName { get; set; }
+        public Currency Currency { get; set; } = new Currency();
+    }
+
+    private bool isRequestProcessing;
+    private StringBuilder errorMessage = new StringBuilder();
+    private CurrencyModel model = new CurrencyModel();
+
+    protected async Task AddCurrency()
+    {
+        errorMessage.Clear();
+        isRequestProcessing = true;
+
+        try
+        {
+            await CountryService.AddCurrencyAsync(model.CountryName, model.Currency);
+        }
+        catch (Exception ex)
+        {
+            errorMessage.Append(ex.Message);
+        }
+        finally
+        {
+            isRequestProcessing = false;
+        }
+
+        await JsRuntime.InvokeVoidAsync("alert", "The new currency has been added with success!");
+    }
+}
