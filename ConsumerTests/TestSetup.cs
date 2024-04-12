@@ -1,5 +1,6 @@
 using Xunit.Abstractions;
 using PactNet;
+using PactNet.Output.Xunit;
 
 namespace ConsumerTests
 {
@@ -10,16 +11,16 @@ namespace ConsumerTests
             var config = new PactConfig
             {
                 PactDir = "../../pacts/",
-                //Outputters = new[]
-                //{            
-                //    new XUnitOutput(output)
-                //}
+                Outputters = new[]
+                {
+                    new XunitOutput(output)
+                }
             };
 
             // You can select which specification version you wish to use by calling either V2 or V3
             IPactV3 pact = Pact.V3(consumer, provider, config);
 
-            return pact.UsingNativeBackend();
+            return pact.WithHttpInteractions();
         }
     }
 }

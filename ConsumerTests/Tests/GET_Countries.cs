@@ -12,23 +12,21 @@ namespace ConsumerTests.Tests
 
         public GET_Countries(ITestOutputHelper output)
         {
-            this.pact = TestSetup.SetupPact("Consumer", "CoreLogicMembers", output);
+            this.pact = TestSetup.SetupPact("Countries Consumer", "Countries Provider", output);
         }
 
         [Fact]
         [Trait("Category", "Contract")]
         public async Task Should_Return_Countries_Object_Array()
         {
-            var affiliationId = "GMAA";
             var exampleRequest = this.GetExpectedCountriesRequest();
             var exampleResponse = this.GetExpectedCountriesResponse();
 
             // Create the expectation(s) using the fluent API, first the request and then the response
             this.pact
                 .UponReceiving("a request to retrieve countries filtered by a given data")
-                .WithRequest(HttpMethod.Get, "/api/CoreLogic/Members")
-                .WithQuery("affiliationid", affiliationId)
-                .WithHeader("Authorization", "ApiKeynMUtYvj2t4VsfrSXEgKkdhLZBvQSuNk3PATJJmMF")
+                .WithRequest(HttpMethod.Get, "api/countries")
+                //.WithHeader("Authorization", "ApiKeynMUtYvj2t4VsfrSXEgKkdhLZBvQSuNk3PATJJmMF")
                 .WithJsonBody(exampleRequest)
                 .WillRespond()
                 .WithStatus(HttpStatusCode.OK)
