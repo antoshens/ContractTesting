@@ -10,11 +10,12 @@ namespace ConsumerTests
         {
             var config = new PactConfig
             {
-                PactDir = "../../pacts/",
+                PactDir = "../../../pacts/",
                 Outputters = new[]
                 {
                     new XunitOutput(output)
-                }
+                },
+                LogLevel = PactLogLevel.Debug
             };
 
             // You can select which specification version you wish to use by calling either V2 or V3

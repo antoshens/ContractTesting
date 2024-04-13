@@ -22,7 +22,7 @@ namespace Consumer.Data
                 { "population", filter.Population.ToString() }
             };
 
-            var response = await _httpClient.GetAsync(QueryHelpers.AddQueryString("countries", queryParams));
+            var response = await _httpClient.GetAsync(QueryHelpers.AddQueryString("api/countries", queryParams));
 
             if (response.IsSuccessStatusCode)
             {

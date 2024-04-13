@@ -13,7 +13,7 @@
         {
             return new HttpClient
             {
-                BaseAddress = _uri
+                BaseAddress = new Uri(_uri, "api")
             };
         }
     }
