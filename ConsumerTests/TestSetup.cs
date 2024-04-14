@@ -10,7 +10,7 @@ namespace ConsumerTests
         {
             var config = new PactConfig
             {
-                PactDir = "../../../pacts/",
+                PactDir = "../../../../pacts/",
                 Outputters = new[]
                 {
                     new XunitOutput(output)
