@@ -18,7 +18,7 @@ namespace ConsumerTests.Tests
         }
 
         [Fact]
-        [Trait("Category", "Contract")]
+        [Trait("Countries", "Contract")]
         public async Task Should_Return_One_Matched_Country()
         {
             var exampleQueryParams = GetExpectedCountriesRequest();
@@ -54,7 +54,7 @@ namespace ConsumerTests.Tests
         }
 
         [Fact]
-        [Trait("Category", "Contract")]
+        [Trait("Countries", "Contract")]
         public async Task Should_Return_Empty_Array_If_No_Matches_Found()
         {
             var exampleQueryParams = GetWrongExpectedCountriesRequest();
@@ -88,7 +88,7 @@ namespace ConsumerTests.Tests
         }
 
         [Fact]
-        [Trait("Category", "Contract")]
+        [Trait("Countries", "Contract")]
         public async Task ShouldContact_At_Least_One_Capital()
         {
             var exampleQueryParams = GetExpectedCountriesRequest();
@@ -96,7 +96,7 @@ namespace ConsumerTests.Tests
 
             // Create the expectation(s) using the fluent API, first the request and then the response
             pact
-                .UponReceiving("a request to retrieve at least one capital for a country")
+                .UponReceiving("a request that should retrieve at least one capital for a country")
                 .WithRequest(HttpMethod.Get, "/api/countries")
                 .WithQuery("name", exampleQueryParams["name"])
                 .WithQuery("limit", exampleQueryParams["limit"])
