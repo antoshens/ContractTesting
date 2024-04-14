@@ -9,16 +9,18 @@ namespace ProducerTests.Tests
     public class CurrencyApiTests : IDisposable
     {
         private string _providerUri { get; }
+        private string _pactProviderUri { get; }
         private IWebHost _webHost { get; }
         private ITestOutputHelper _outputHelper { get; }
 
         public CurrencyApiTests(ITestOutputHelper output)
         {
             _outputHelper = output;
-            _providerUri = "http://localhost:9000";
+            _providerUri = "http://localhost:7118";
+            _pactProviderUri = "http://localhost:9000";
 
             _webHost = WebHost.CreateDefaultBuilder()
-                .UseUrls(_providerUri)
+                .UseUrls(_pactProviderUri)
                 .UseStartup<TestStartup>()
                 .Build();
 
@@ -44,7 +46,7 @@ namespace ProducerTests.Tests
             pactVerifier
                 .ServiceProvider("Provider", new Uri(_providerUri))
                 .WithFileSource(pactFile)
-                .WithProviderStateUrl(new Uri($"{_providerUri}/provider-states"))
+                .WithProviderStateUrl(new Uri($"{_pactProviderUri}/provider-states"))
                 .Verify();
         }
 

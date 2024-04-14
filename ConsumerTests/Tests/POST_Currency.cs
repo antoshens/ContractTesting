@@ -30,14 +30,14 @@ namespace ConsumerTests.Tests
             var jsonBody = JsonSerializer.Serialize(expectedRequestBody);
 
             pact
-                .UponReceiving("a request to add a new currency to the existed country")
-                .WithRequest(HttpMethod.Post, $"/{route}")
-                //.WithJsonBody(expectedRequestBody)
-                .WithBody(jsonBody, "application/json")
-                .WithHeader("Content-Type", "application/json")
+                .UponReceiving("A valid request to add new currency")
+                    .WithRequest(HttpMethod.Post, $"/{route}")
+                    //.WithJsonBody(expectedRequestBody)
+                    .WithBody(jsonBody, "application/json")
+                    .WithHeader("Content-Type", "application/json")
                 .WillRespond()
-                .WithStatus(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "*/*");
+                    .WithStatus(HttpStatusCode.OK)
+                    .WithHeader("Content-Type", "*/*");
 
             await pact.VerifyAsync(async ctx =>
             {
@@ -64,14 +64,15 @@ namespace ConsumerTests.Tests
             var jsonBody = JsonSerializer.Serialize(expectedRequestBody);
 
             pact
-                .UponReceiving("a request to add a new currency without a country")
-                .WithRequest(HttpMethod.Post, $"/{route}")
-                .WithBody(jsonBody, "application/json")
-                .WithHeader("Content-Type", "application/json")
+                .UponReceiving("An invalid add currency request")
+                    .Given("when no country provided")
+                    .WithRequest(HttpMethod.Post, $"/{route}")
+                    .WithBody(jsonBody, "application/json")
+                    .WithHeader("Content-Type", "application/json")
                 .WillRespond()
-                .WithStatus(HttpStatusCode.BadRequest)
-                .WithHeader("Content-Type", "*/*")
-                .WithJsonBody(ErrorMessage);
+                    .WithStatus(HttpStatusCode.BadRequest)
+                    .WithHeader("Content-Type", "*/*")
+                    .WithJsonBody(ErrorMessage);
 
             await pact.VerifyAsync(async ctx =>
             {
@@ -95,12 +96,13 @@ namespace ConsumerTests.Tests
             var route = $"api/currency/Sweden";
 
             pact
-                .UponReceiving("a request to add a new currency without a body")
-                .WithRequest(HttpMethod.Post, $"/{route}")
+                .UponReceiving("An invalid add currency request")
+                    .Given("when no currency provided")
+                    .WithRequest(HttpMethod.Post, $"/{route}")
                 .WillRespond()
-                .WithStatus(HttpStatusCode.BadRequest)
-                .WithHeader("Content-Type", "*/*")
-                .WithJsonBody(ErrorMessage);
+                    .WithStatus(HttpStatusCode.BadRequest)
+                    .WithHeader("Content-Type", "*/*")
+                    .WithJsonBody(ErrorMessage);
 
             await pact.VerifyAsync(async ctx =>
             {

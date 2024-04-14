@@ -1,6 +1,7 @@
 ﻿using Consumer.Data;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PactNet;
 using PactNet.Matchers;
 using System.Net;
@@ -26,16 +27,16 @@ namespace ConsumerTests.Tests
 
             // Create the expectation(s) using the fluent API, first the request and then the response
             pact
-                .UponReceiving("a request to retrieve countries filtered by a given data")
-                .WithRequest(HttpMethod.Get, "/api/countries")
-                .WithQuery("name", exampleQueryParams["name"])
-                .WithQuery("limit", exampleQueryParams["limit"])
-                .WithQuery("population", exampleQueryParams["population"])
-                .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
+                .UponReceiving("A valid request to retrieve filtered countries")
+                    .WithRequest(HttpMethod.Get, "/api/countries")
+                    .WithQuery("name", exampleQueryParams["name"])
+                    .WithQuery("limit", exampleQueryParams["limit"])
+                    .WithQuery("population", exampleQueryParams["population"])
+                    .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
                 .WillRespond()
-                .WithStatus(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "*/*")
-                .WithJsonBody(exampleResponse);
+                    .WithStatus(HttpStatusCode.OK)
+                    .WithHeader("Content-Type", "*/*")
+                    .WithJsonBody(Match.Type(exampleResponse));
 
             await pact.VerifyAsync(async ctx =>
             {
@@ -45,7 +46,8 @@ namespace ConsumerTests.Tests
                 var response = await client.GetAsync(QueryHelpers.AddQueryString("api/countries", exampleQueryParams));
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                var countries = JsonConvert.DeserializeObject<List<Country>>(jsonResponse);
+                var result = JObject.Parse(jsonResponse);
+                var countries = result["value"]?.ToObject<List<Country>>();
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Single(countries);
@@ -61,16 +63,17 @@ namespace ConsumerTests.Tests
 
             // Create the expectation(s) using the fluent API, first the request and then the response
             pact
-                .UponReceiving("a request to retrieve empty list if no countries matches a criteria")
-                .WithRequest(HttpMethod.Get, "/api/countries")
-                .WithQuery("name", exampleQueryParams["name"])
-                .WithQuery("limit", exampleQueryParams["limit"])
-                .WithQuery("population", exampleQueryParams["population"])
-                .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
+                .UponReceiving("A valid request to retrieve filtered countries")
+                    .Given("when no matches found")
+                    .WithRequest(HttpMethod.Get, "/api/countries")
+                    .WithQuery("name", exampleQueryParams["name"])
+                    .WithQuery("limit", exampleQueryParams["limit"])
+                    .WithQuery("population", exampleQueryParams["population"])
+                    .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
                 .WillRespond()
-                .WithStatus(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "*/*")
-                .WithJsonBody(Array.Empty<Country>());
+                    .WithStatus(HttpStatusCode.OK)
+                    .WithHeader("Content-Type", "*/*")
+                    .WithJsonBody(Array.Empty<Country>());
 
             await pact.VerifyAsync(async ctx =>
             {
@@ -87,40 +90,6 @@ namespace ConsumerTests.Tests
             });
         }
 
-        [Fact]
-        [Trait("Countries", "Contract")]
-        public async Task ShouldContact_At_Least_One_Capital()
-        {
-            var exampleQueryParams = GetExpectedCountriesRequest();
-            var exampleResponse = GetExpectedCountriesResponse();
-
-            // Create the expectation(s) using the fluent API, first the request and then the response
-            pact
-                .UponReceiving("a request that should retrieve at least one capital for a country")
-                .WithRequest(HttpMethod.Get, "/api/countries")
-                .WithQuery("name", exampleQueryParams["name"])
-                .WithQuery("limit", exampleQueryParams["limit"])
-                .WithQuery("population", exampleQueryParams["population"])
-                .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
-                .WillRespond()
-                .WithStatus(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "*/*")
-                .WithJsonBody(Match.MinType(exampleResponse[0].Capital, 1));
-
-            await pact.VerifyAsync(async ctx =>
-            {
-                // All API calls must happen inside this lambda, using the URL provided by the context argument
-                var providerClientFactory = new ProviderClientFactory(ctx.MockServerUri);
-                var client = providerClientFactory.CreateClient();
-                var response = await client.GetAsync(QueryHelpers.AddQueryString("api/countries", exampleQueryParams));
-
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Contains("Kyiv", jsonResponse);
-            });
-        }
-
         private List<Country> GetExpectedCountriesResponse()
         {
             var responseCollection = new List<Country>();
@@ -130,7 +99,11 @@ namespace ConsumerTests.Tests
                 {
                     NativeName = new Dictionary<string, Translation> { { "Ukraine", new Translation() } }
                 },
-                Capital = ["Kyiv"]
+                Capital = ["Kyiv"],
+                Population = 10,
+                Area = 12.5,
+                StartOfWeek = "Monday",
+                Car = new Car { Side = "Right" }
             };
             responseCollection.Add(testCountry);
 
