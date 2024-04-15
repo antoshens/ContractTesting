@@ -28,7 +28,7 @@ namespace ProducerTests
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
-            //app.UseMiddleware<ProviderStateMiddleware>();
+            app.UseMiddleware<ProviderStateMiddleware>(); // Use to configure provider state before each test (create some mock data, etc.)
             app.UseRouting();
             app.UseEndpoints(e => e.MapControllers());
         }

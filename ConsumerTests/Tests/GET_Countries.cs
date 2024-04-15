@@ -1,7 +1,6 @@
 ﻿using Consumer.Data;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PactNet;
 using PactNet.Matchers;
 using System.Net;
@@ -22,12 +21,14 @@ namespace ConsumerTests.Tests
         [Trait("Countries", "Contract")]
         public async Task Should_Return_One_Matched_Country()
         {
+            // Arrange
             var exampleQueryParams = GetExpectedCountriesRequest();
             var exampleResponse = GetExpectedCountriesResponse();
 
             // Create the expectation(s) using the fluent API, first the request and then the response
             pact
-                .UponReceiving("A valid request to retrieve filtered countries")
+                .UponReceiving("A valid request to retrieve filtered country")
+                    .Given("when a given country exists")
                     .WithRequest(HttpMethod.Get, "/api/countries")
                     .WithQuery("name", exampleQueryParams["name"])
                     .WithQuery("limit", exampleQueryParams["limit"])
@@ -35,9 +36,10 @@ namespace ConsumerTests.Tests
                     .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
-                    .WithHeader("Content-Type", "*/*")
-                    .WithJsonBody(Match.Type(exampleResponse));
+                    .WithJsonBody(Match.Type(exampleResponse))
+                    .WithHeader("Content-Type", "application/json; charset=utf-8");
 
+            // Act / Assert
             await pact.VerifyAsync(async ctx =>
             {
                 // All API calls must happen inside this lambda, using the URL provided by the context argument
@@ -46,12 +48,11 @@ namespace ConsumerTests.Tests
                 var response = await client.GetAsync(QueryHelpers.AddQueryString("api/countries", exampleQueryParams));
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                var result = JObject.Parse(jsonResponse);
-                var countries = result["value"]?.ToObject<List<Country>>();
+                var countries = JsonConvert.DeserializeObject<List<Country>>(jsonResponse);
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.NotNull(countries);
                 Assert.Single(countries);
-                Assert.Equal(exampleResponse[0].Name.Common, countries[0].Name.Common);
             });
         }
 
@@ -59,6 +60,7 @@ namespace ConsumerTests.Tests
         [Trait("Countries", "Contract")]
         public async Task Should_Return_Empty_Array_If_No_Matches_Found()
         {
+            // Arrange
             var exampleQueryParams = GetWrongExpectedCountriesRequest();
 
             // Create the expectation(s) using the fluent API, first the request and then the response
@@ -72,9 +74,10 @@ namespace ConsumerTests.Tests
                     .WithQuery("sortOrder", exampleQueryParams["sortOrder"])
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
-                    .WithHeader("Content-Type", "*/*")
-                    .WithJsonBody(Array.Empty<Country>());
+                    .WithJsonBody(Array.Empty<Country>())
+                    .WithHeader("Content-Type", "application/json; charset=utf-8");
 
+            // Act / Assert
             await pact.VerifyAsync(async ctx =>
             {
                 // All API calls must happen inside this lambda, using the URL provided by the context argument

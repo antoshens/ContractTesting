@@ -31,14 +31,9 @@ namespace ContractTesting_Producer.Controllers
 
                 return Ok(response);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
-#if DEBUG
-                return BadRequest(ex.Message);
-#else
                 return BadRequest("Unable to load countries.");
-#endif
             }
         }
 
@@ -53,6 +48,11 @@ namespace ContractTesting_Producer.Controllers
                     throw new ArgumentNullException(nameof(countryName));
                 }
 
+                if (countryName.Any(Char.IsDigit))
+                {
+                    throw new FormatException($"{nameof(countryName)} has the wrong format");
+                }
+
                 if (currency is null)
                 {
                     throw new ArgumentNullException(nameof(currency));
@@ -60,14 +60,9 @@ namespace ContractTesting_Producer.Controllers
 
                 return Ok("The currency has been added.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
-#if DEBUG
-                return BadRequest(ex.Message);
-#else
                 return BadRequest("Unable to add new currency.");
-#endif
             }
         }
 

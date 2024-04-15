@@ -8,7 +8,6 @@ namespace ProducerTests
 {
     public class ProviderStateMiddleware
     {
-        private const string ConsumerName = "Consumer";
         private readonly RequestDelegate _next;
         private readonly IDictionary<string, Action> _providerStates;
 
@@ -18,36 +17,24 @@ namespace ProducerTests
             _providerStates = new Dictionary<string, Action>
             {
                 {
-                    "There is no data",
-                    RemoveAllData
+                    "when a given country exists", // The name of the provider state is specified in the given clause of an interaction in the consumer
+                    HandleCountryIsFoundRequestState
                 },
                 {
-                    "There is data",
-                    AddData
+                    "when no matches found",
+                    HandleNoMatchesFoundRequestState
                 }
             };
         }
 
-        private void RemoveAllData()
+        private void HandleNoMatchesFoundRequestState()
         {
-            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
-            var deletePath = Path.Combine(path, "somedata.txt");
-
-            if (File.Exists(deletePath))
-            {
-                File.Delete(deletePath);
-            }
+            Console.WriteLine("This is a 'when no country provided' state handler.");
         }
 
-        private void AddData()
+        private void HandleCountryIsFoundRequestState()
         {
-            string path = Path.Combine(Directory.GetCurrentDirectory(), @"../../../../../data");
-            var writePath = Path.Combine(path, "somedata.txt");
-
-            if (!File.Exists(writePath))
-            {
-                File.Create(writePath);
-            }
+            Console.WriteLine("This is a 'when no currency provided' state handler.");
         }
 
         public async Task Invoke(HttpContext context)

@@ -1,35 +1,24 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore;
-using Xunit.Abstractions;
-using PactNet.Output.Xunit;
+﻿using PactNet.Output.Xunit;
 using PactNet.Verifier;
+using Xunit.Abstractions;
 
 namespace ProducerTests.Tests
 {
-    public class CurrencyApiTests : IDisposable
+    public class CurrencyApiTests : IClassFixture<ProviderTestFixture>
     {
-        private string _providerUri { get; }
-        private string _pactProviderUri { get; }
-        private IWebHost _webHost { get; }
+        private ProviderTestFixture _fixture;
         private ITestOutputHelper _outputHelper { get; }
 
-        public CurrencyApiTests(ITestOutputHelper output)
+        public CurrencyApiTests(ProviderTestFixture fixture, ITestOutputHelper output)
         {
+            _fixture = fixture;
             _outputHelper = output;
-            _providerUri = "http://localhost:7118";
-            _pactProviderUri = "http://localhost:9000";
-
-            _webHost = WebHost.CreateDefaultBuilder()
-                .UseUrls(_pactProviderUri)
-                .UseStartup<TestStartup>()
-                .Build();
-
-            _webHost.Start();
         }
 
         [Fact]
         public void Ensure_Currency_Api_Honours_Pact_With_Consumer()
         {
+            // Arrange
             var config = new PactVerifierConfig
             {
                 Outputters = new[]
@@ -43,34 +32,11 @@ namespace ProducerTests.Tests
             var pactVerifier = new PactVerifier(config);
             var pactFile = new FileInfo(Path.Join("..", "..", "..", "..", "pacts", "Currency Consumer-Currency Provider.json"));
 
+            // Act / Assert
             pactVerifier
-                .ServiceProvider("Provider", new Uri(_providerUri))
+                .ServiceProvider("Provider", new Uri(_fixture.ProviderUri))
                 .WithFileSource(pactFile)
-                .WithProviderStateUrl(new Uri($"{_pactProviderUri}/provider-states"))
                 .Verify();
         }
-
-        #region IDisposable Support
-        private bool disposedValue = false; // Needed to detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    _webHost.StopAsync().GetAwaiter().GetResult();
-                    _webHost.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-        #endregion
     }
 }
