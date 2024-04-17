@@ -36,6 +36,7 @@ namespace ProducerTests.Tests
             pactVerifier
                 .ServiceProvider("Provider", new Uri(_fixture.ProviderUri))
                 .WithFileSource(pactFile)
+                //.WithUriSource(new Uri(_fixture.ProviderUri))
                 //.WithProviderStateUrl(new Uri($"{_fixture.PactServiceUri}/provider-states"))
                 .Verify();
         }

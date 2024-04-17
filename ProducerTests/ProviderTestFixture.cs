@@ -9,10 +9,12 @@ namespace ProducerTests
 
         public string ProviderUri { get; }
         public string PactServiceUri { get; }
+        public string PactBrockerUri { get; }
 
         public ProviderTestFixture()
         {
             ProviderUri = "http://localhost:7118";
+            PactBrockerUri = "http://localhost:9292";
 
             var pactPort = GenarateRandomPort(); // Since the tests can and most likely be run in parallel, we need to always have a free port
             PactServiceUri = $"http://localhost:{pactPort}";
