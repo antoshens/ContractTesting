@@ -8,7 +8,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<CountryService>();
 builder.Services.AddHttpClient("countriesconsumer", cl =>
 {
-    cl.BaseAddress = new Uri("https://localhost:7118/api/");
+    cl.BaseAddress = new Uri("http://localhost:7118/");
 });
 
 var app = builder.Build();
